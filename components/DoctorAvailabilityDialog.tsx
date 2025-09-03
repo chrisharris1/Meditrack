@@ -539,12 +539,34 @@ export const DoctorAvailabilityDialog = ({ isOpen, onClose }: DoctorAvailability
           <button
             onClick={async () => {
               console.log('🔧 Manual cleanup triggered');
-              const { cleaned, updatedDoctors } = await import('@/lib/unavailabilityStorage').then(m => m.cleanupExpiredUnavailability());
-              if (cleaned.length > 0) {
-                alert(`✅ Manual cleanup completed!\n🗑️ Removed ${cleaned.length} expired slots\n👨‍⚕️ Doctors updated: ${updatedDoctors.join(', ')}`);
-                console.log(`⚡ Manual cleanup: ${cleaned.length} expired slots removed for doctors: ${updatedDoctors.join(', ')}`);
-              } else {
-                alert('ℹ️ No expired unavailability slots found to clean up.');
+              try {
+                const response = await fetch('/api/cleanup', {
+                  method: 'GET',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                });
+
+                if (!response.ok) {
+                  throw new Error(`Cleanup failed: ${response.status}`);
+                }
+
+                const result = await response.json();
+
+                if (result.cleaned > 0) {
+                  alert(`✅ Manual cleanup completed!\n🗑️ Removed ${result.cleaned} expired slots\n👨‍⚕️ Doctors updated: ${result.updatedDoctors.join(', ')}`);
+                  console.log(`⚡ Manual cleanup: ${result.cleaned} expired slots removed for doctors: ${result.updatedDoctors.join(', ')}`);
+
+                  // Dispatch event to update UI
+                  window.dispatchEvent(new CustomEvent('unavailabilityCleanup', {
+                    detail: { cleaned: result.cleaned, updatedDoctors: result.updatedDoctors }
+                  }));
+                } else {
+                  alert('ℹ️ No expired unavailability slots found to clean up.');
+                }
+              } catch (error) {
+                console.error('❌ Manual cleanup error:', error);
+                alert(`❌ Error during cleanup: ${error instanceof Error ? error.message : 'Unknown error'}`);
               }
             }}
             style={{

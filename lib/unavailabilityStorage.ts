@@ -170,10 +170,43 @@ export const cleanupExpiredUnavailability = async (): Promise<{
   }
 };
 
+// Server-side cleanup function (calls the API endpoint)
+const serverSideCleanup = async (): Promise<{
+  cleaned: Array<{doctorName: string; slot: any}>;
+  updatedDoctors: string[];
+}> => {
+  try {
+    console.log('🌐 Calling server-side cleanup API...');
+    const response = await fetch('/api/cleanup', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Server cleanup failed: ${response.status}`);
+    }
+
+    const result = await response.json();
+    console.log('✅ Server cleanup result:', result);
+
+    return {
+      cleaned: result.cleaned || [],
+      updatedDoctors: result.updatedDoctors || []
+    };
+  } catch (error) {
+    console.error('❌ Server cleanup error:', error);
+    // Fallback to client-side cleanup
+    console.log('🔄 Falling back to client-side cleanup...');
+    return await cleanupExpiredUnavailability();
+  }
+};
+
 // Initialize cleanup timer (runs every 5 minutes for better testing)
 if (typeof window !== 'undefined') {
   setInterval(async () => {
-    const { cleaned, updatedDoctors } = await cleanupExpiredUnavailability();
+    const { cleaned, updatedDoctors } = await serverSideCleanup();
     if (cleaned.length > 0) {
       console.log(`⚡ Auto-cleanup completed: ${cleaned.length} expired slots removed for doctors: ${updatedDoctors.join(', ')}`);
 
@@ -188,7 +221,15 @@ if (typeof window !== 'undefined') {
 // Initial cleanup on load
 if (typeof window !== 'undefined') {
   setTimeout(async () => {
-    await cleanupExpiredUnavailability();
+    const result = await serverSideCleanup();
+    if (result.cleaned.length > 0) {
+      console.log(`🚀 Initial cleanup: ${result.cleaned.length} expired slots removed for doctors: ${result.updatedDoctors.join(', ')}`);
+
+      // Dispatch event to update UI
+      window.dispatchEvent(new CustomEvent('unavailabilityCleanup', {
+        detail: { cleaned: result.cleaned, updatedDoctors: result.updatedDoctors }
+      }));
+    }
   }, 1000);
 }
 
@@ -226,10 +267,15 @@ if (typeof window !== 'undefined') {
   // Add manual cleanup trigger for testing
   (window as any).triggerCleanup = async () => {
     console.log('🔧 Manual cleanup triggered from console');
-    const result = await cleanupExpiredUnavailability();
+    const result = await serverSideCleanup();
     console.log('🧹 Cleanup result:', result);
     if (result.cleaned.length > 0) {
       console.log(`✅ Cleaned ${result.cleaned.length} expired slots for doctors: ${result.updatedDoctors.join(', ')}`);
+
+      // Dispatch event to update UI
+      window.dispatchEvent(new CustomEvent('unavailabilityCleanup', {
+        detail: { cleaned: result.cleaned, updatedDoctors: result.updatedDoctors }
+      }));
     } else {
       console.log('ℹ️ No expired slots found to clean up');
     }
