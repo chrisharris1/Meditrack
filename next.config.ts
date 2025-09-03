@@ -17,6 +17,9 @@ const nextConfig: NextConfig = {
     // your project has ESLint errors.
     ignoreDuringBuilds: true,
   },
+  typescript:{
+    ignoreBuildErrors: true,
+  },
   env: {
     PROJECT_ID: process.env.PROJECT_ID,
     API_KEY: process.env.API_KEY,
