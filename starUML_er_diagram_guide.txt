@@ -1,0 +1,169 @@
+MEDITRACK ER DIAGRAM - StarUML Creation Guide
+==============================================
+
+ENTITIES TO CREATE:
+==================
+
+1. USER ENTITY
+┌─────────────────────┐
+│       User          │
+├─────────────────────┤
+│ PK: userId: string  │
+│ name: string        │
+│ email: string       │
+│ phone: string       │
+│ createdAt: datetime │
+│ updatedAt: datetime │
+└─────────────────────┘
+
+2. PATIENT ENTITY
+┌──────────────────────────────┐
+│           Patient            │
+├──────────────────────────────┤
+│ PK: patientId: string        │
+│ FK: userId: string           │
+│ name: string                 │
+│ email: string                │
+│ phone: string                │
+│ birthDate: date              │
+│ gender: enum                 │
+│ address: text                │
+│ occupation: string           │
+│ emergencyContactName: string │
+│ emergencyContactNumber: string│
+│ primaryPhysician: string     │
+│ insuranceProvider: string    │
+│ insurancePolicyNumber: string│
+│ allergies: text              │
+│ currentMedication: text      │
+│ familyMedicalHistory: text   │
+│ pastMedicalHistory: text     │
+│ identificationType: string   │
+│ identificationNumber: string │
+│ identificationDocumentId: string │
+│ identificationDocumentUrl: text  │
+│ treatmentConsent: boolean    │
+│ disclosureConsent: boolean   │
+│ privacyConsent: boolean      │
+│ createdAt: datetime          │
+│ updatedAt: datetime          │
+└──────────────────────────────┘
+
+3. APPOINTMENT ENTITY
+┌────────────────────────────┐
+│        Appointment         │
+├────────────────────────────┤
+│ PK: appointmentId: string  │
+│ FK: userId: string         │
+│ FK: patientId: string      │
+│ primaryPhysician: string   │
+│ schedule: datetime         │
+│ reason: text               │
+│ status: enum               │
+│ note: text                 │
+│ cancellationReason: text   │
+│ createdAt: datetime        │
+│ updatedAt: datetime        │
+└────────────────────────────┘
+
+4. DOCTOR ENTITY (Optional)
+┌─────────────────────────┐
+│         Doctor          │
+├─────────────────────────┤
+│ PK: doctorId: string    │
+│ name: string            │
+│ image: string           │
+│ specialization: string  │
+│ isActive: boolean       │
+│ createdAt: datetime     │
+│ updatedAt: datetime     │
+└─────────────────────────┘
+
+RELATIONSHIPS TO CREATE:
+=======================
+
+1. User --||--|| Patient
+   Relationship: "has profile"
+   Type: One-to-One (1:1)
+   User.userId connects to Patient.userId
+
+2. User --||--o{ Appointment
+   Relationship: "creates"
+   Type: One-to-Many (1:N)
+   User.userId connects to Appointment.userId
+
+3. Patient --||--o{ Appointment
+   Relationship: "schedules"
+   Type: One-to-Many (1:N)
+   Patient.patientId connects to Appointment.patientId
+
+4. Doctor --||--o{ Appointment (if Doctor entity is created)
+   Relationship: "attends"
+   Type: One-to-Many (1:N)
+   Doctor.name connects to Appointment.primaryPhysician
+
+STARTML CREATION STEPS:
+======================
+
+1. Open StarUML
+2. Create New Project → Data Model → Entity Relationship Diagram
+3. Add entities:
+   - Right-click → Add → Entity
+   - Name each entity (User, Patient, Appointment, Doctor)
+4. Add attributes to each entity:
+   - Right-click on entity → Add → Column
+   - Set data types, constraints (PK, FK, NOT NULL, etc.)
+5. Create relationships:
+   - Use "Relationship" tool to connect entities
+   - Set cardinality (1:1, 1:N, N:M)
+   - Add relationship names
+6. Format and layout:
+   - Arrange entities for clear visibility
+   - Use colors to distinguish entity types
+   - Add title and legend
+
+LAYOUT SUGGESTION:
+==================
+
+        ┌─────────┐         1:1         ┌─────────────┐
+        │  User   │ -------------------- │   Patient   │
+        └─────────┘                      └─────────────┘
+             │                                   │
+             │ 1:N                              │ 1:N
+             │                                   │
+             └──────────┬─────────────────────────┘
+                        │
+                        ▼
+              ┌─────────────────┐
+              │   Appointment   │
+              └─────────────────┘
+                        │
+                        │ N:1 (implied)
+                        │
+                        ▼
+              ┌─────────────────┐
+              │     Doctor      │
+              └─────────────────┘
+
+ENUMS TO DEFINE:
+================
+- Gender: 'male', 'female', 'other'
+- Status: 'pending', 'scheduled', 'cancelled'
+- IdentificationType: 'Birth Certificate', 'Driver's License', 'Passport', etc.
+
+COLOR CODING SUGGESTION:
+=======================
+- User Entity: Light Blue
+- Patient Entity: Light Green  
+- Appointment Entity: Light Orange
+- Doctor Entity: Light Purple
+- Primary Keys: Bold/Yellow highlight
+- Foreign Keys: Italic/Blue highlight
+
+ADDITIONAL NOTES:
+================
+- Mark all PK attributes with key symbol
+- Mark all FK attributes with reference symbol
+- Add constraints (NOT NULL, UNIQUE, etc.)
+- Consider adding indexes for performance
+- Document business rules in diagram notes
