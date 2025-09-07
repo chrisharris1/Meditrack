@@ -1,6 +1,4 @@
 import Image from "next/image";
-import Link from "next/link";
-
 
 import { StatCard } from "@/components/StatCard";
 import { getRecentAppointmentList } from "@/lib/actions/appointment.actions";

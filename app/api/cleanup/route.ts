@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cleanupExpiredUnavailability } from '@/lib/unavailabilityStorage';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     console.log('🧹 Server-side cleanup triggered');
 
