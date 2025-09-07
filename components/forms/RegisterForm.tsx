@@ -403,7 +403,7 @@ const RegisterForm = ({ user }: { user: User }) => {
             <CustomFormField
               fieldType={FormFieldType.SKELETON}
               control={form.control}
-              name="identificationDocument"
+              name="identificationDocumentId"
               label="Scanned Copy of Identification Document"
               renderSkeleton={(field) => (
                 <FormControl>
